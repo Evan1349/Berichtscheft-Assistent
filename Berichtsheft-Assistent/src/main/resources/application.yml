@@ -1,0 +1,19 @@
+Server:
+  port: 8081
+
+spring:
+  application:
+    name: Berichtsheft-Assistent
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/berichtsheft_db
+    username: postgres
+    password: 123
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  
