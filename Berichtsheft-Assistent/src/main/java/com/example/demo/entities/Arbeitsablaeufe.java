@@ -2,6 +2,8 @@ package com.example.demo.entities;
 
 import java.time.Instant;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import com.example.demo.enumeration.BerichtsheftStatus;
 
 import jakarta.persistence.Column;
@@ -29,16 +31,21 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 @Table(name="T_BERICHTSHEFT_HISTORIE")
-public class Arbeitsablauf {
+public class Arbeitsablaeufe extends Auditable {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "berichtsheft_id", nullable = false)
+    private Berichtsheft berichtsheft;
+	
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "akteur_id", nullable = false)
 	private Benutzer akteur;
 	
+	@CreationTimestamp
 	@Column(nullable = false, updatable = false)
 	private Instant zeitpunkt;
 	
@@ -49,8 +56,5 @@ public class Arbeitsablauf {
 	@Column(columnDefinition ="TEXT")
 	private String comment;
 
-	@ManyToOne
-	@JoinColumn(name="berichtsheftId", nullable = false)
-	private Berichtsheft berichtsheft;
-	
+
 }

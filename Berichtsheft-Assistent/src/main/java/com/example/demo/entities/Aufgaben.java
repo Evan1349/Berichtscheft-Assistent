@@ -51,7 +51,7 @@ public class Aufgaben extends Auditable {
     @Size(max = 100, message = "Die Abteilung ist zu lang (max. 100 Zeichen).")
     private String abteilung;
 
-    private int sortOrder;
+    private Integer sortOrder;
     
     @ManyToOne
     @JoinColumn(name="berichtsheftId", nullable = false)

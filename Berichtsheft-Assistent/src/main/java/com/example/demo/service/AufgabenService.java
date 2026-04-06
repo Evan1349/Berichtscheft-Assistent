@@ -7,12 +7,12 @@ import com.example.demo.dtos.AufgabenResponse;
 
 public interface AufgabenService {
 	
-	public AufgabenResponse createAufgaben(AufgabenRequest request);
+	public AufgabenResponse createAufgaben(AufgabenRequest request, Long berichtsheftId);
 	
-	public List<AufgabenResponse> getTageAufgaben();
+	public List<AufgabenResponse> getTageAufgaben(Long berichtsheftId) ;
 	
-	public AufgabenResponse updateAufgaben();
+	public AufgabenResponse updateAufgaben(AufgabenRequest request, Long aufgabenId);
 	
-	public void deleteAufgaben();
+	public void deleteAufgaben(Long aufgabenId);
 
 }
