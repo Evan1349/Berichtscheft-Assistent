@@ -10,6 +10,7 @@ import com.example.demo.dtos.BerichtsheftRequest;
 import com.example.demo.dtos.BerichtsheftResponse;
 import com.example.demo.entities.Benutzer;
 import com.example.demo.entities.Berichtsheft;
+import com.example.demo.enumeration.BenutzerRolle;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.BenutzerRepository;
 import com.example.demo.repository.BerichtsheftRepository;
@@ -29,7 +30,8 @@ public class BerichtsheftServiceImpl implements BerichtsheftService {
 	@Override
 	public BerichtsheftResponse createBerichtsheft(Long benutzerId, BerichtsheftRequest request) {
 
-		Benutzer benutzer = benutzerRepository.findById(benutzerId)
+		Benutzer benutzer = benutzerRepository.findByIdAndRolleAndIsDeletedFalse(benutzerId, BenutzerRolle.AZUBI)
+				.filter(b -> b.getAusbilder() != null)
 				.orElseThrow(() -> new ResourceNotFoundException("Benutzer nicht gefunden."));
 		
 		LocalDate start = DateUtils.getWochenStart(request.getJahr(), request.getKw());
@@ -44,39 +46,59 @@ public class BerichtsheftServiceImpl implements BerichtsheftService {
 				.pruefer(benutzer.getAusbilder())
 				.build();
 
-		return toResponse(berichtsheftRepository.save(berichtsheft), benutzer);
+		return toResponse(berichtsheftRepository.save(berichtsheft));
 	}
 
+	@Transactional(readOnly = true)
 	@Override
-	public List<BerichtsheftResponse> getBerichtshefte() {
-		// TODO Auto-generated method stub
-		return null;
+	public List<BerichtsheftResponse> getBerichtshefte(Long benutzerId) {
+		
+		Benutzer benutzer = benutzerRepository.findByIdAndIsDeletedFalse(benutzerId)
+				.orElseThrow(() -> new ResourceNotFoundException("Benutzer nicht gefunden."));
+		
+		return berichtsheftRepository.findAllByAzubiIdAndIsDeletedFalse(benutzer.getId())
+				.stream()
+				.map(this::toResponse)
+				.toList();
 	}
 
+	@Transactional
 	@Override
 	public BerichtsheftResponse updateBerichtsheft(Long berichtsheftId, BerichtsheftRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		
+		Berichtsheft updatecberichtsheft = berichtsheftRepository.findByIdAndIsDeletedFalse(berichtsheftId)
+				.orElseThrow(() -> new ResourceNotFoundException("Berichtsheft nicht gefunden."));
+		
+		LocalDate start = DateUtils.getWochenStart(request.getJahr(), request.getKw());
+	    LocalDate end = start.plusDays(6);
+		
+		updatecberichtsheft.setNachweisNummer(request.getNachweisNummer());
+		updatecberichtsheft.setAusbildungsjahr(request.getAusbildungsjahr());
+		updatecberichtsheft.setWochenStart(start);
+		updatecberichtsheft.setWochenEnde(end);
+		
+		return toResponse(berichtsheftRepository.save(updatecberichtsheft));
 	}
 
+	@Transactional
 	@Override
 	public void deleteBerichtsheft(Long berichtsheftId) {
-		// TODO Auto-generated method stub
 		
+		Berichtsheft berichtsheft = berichtsheftRepository.findByIdAndIsDeletedFalse(berichtsheftId)
+				.orElseThrow(() -> new ResourceNotFoundException("Berichtsheft nicht gefunden."));
+	
+		berichtsheft.setDeleted(true);
 	}
 
 
-	private BerichtsheftResponse toResponse(Berichtsheft berichtsheft, Benutzer benutzer) {
+	private BerichtsheftResponse toResponse(Berichtsheft berichtsheft) {
 		return BerichtsheftResponse.builder()
 				.id(berichtsheft.getId())
-				.vorname(benutzer.getVorname())
-				.nachname(benutzer.getNachname())
 				.nachweisNummer(berichtsheft.getNachweisNummer())
 				.ausbildungsjahr(berichtsheft.getAusbildungsjahr())
 				.wochenStart(berichtsheft.getWochenStart())
 				.wochenEnde(berichtsheft.getWochenEnde())
 				.status(berichtsheft.getStatus())
-				.aufgaben(berichtsheft.getAufgaben())
 				.build();
 		
 	}

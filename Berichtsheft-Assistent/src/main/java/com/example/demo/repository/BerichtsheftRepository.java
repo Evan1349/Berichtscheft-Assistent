@@ -11,7 +11,7 @@ import com.example.demo.entities.Berichtsheft;
 @Repository
 public interface BerichtsheftRepository extends JpaRepository<Berichtsheft, Long> {
 
-	Optional<Berichtsheft> findById(Long id);
+	Optional<Berichtsheft> findByIdAndIsDeletedFalse(Long id);
 
-	List<Berichtsheft> findAllByDeletedFalse();
+	List<Berichtsheft> findAllByAzubiIdAndIsDeletedFalse(Long id);
 }

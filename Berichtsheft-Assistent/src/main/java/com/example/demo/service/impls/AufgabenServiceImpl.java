@@ -43,7 +43,7 @@ public class AufgabenServiceImpl implements AufgabenService{
 	@Override
 	public AufgabenResponse createAufgaben(AufgabenRequest request, Long berichtsheftId) {
 		
-		Berichtsheft berichtsheft = berichtsheftRepository.findById(berichtsheftId)
+		Berichtsheft berichtsheft = berichtsheftRepository.findByIdAndIsDeletedFalse(berichtsheftId)
 				.orElseThrow(()-> new ResourceNotFoundException("Berichtsheft nicht gefunden."));
 		
 		Aufgaben aufgaben = Aufgaben.builder()
@@ -61,13 +61,11 @@ public class AufgabenServiceImpl implements AufgabenService{
 	@Override
 	public List<AufgabenResponse> getTageAufgaben(Long berichtsheftId) {
 		
-		Berichtsheft berichtsheft = berichtsheftRepository.findById(berichtsheftId)
+		Berichtsheft berichtsheft = berichtsheftRepository.findByIdAndIsDeletedFalse(berichtsheftId)
 				.orElseThrow(()-> new ResourceNotFoundException("Berichtsheft nicht gefunden."));
 		
-		List<Aufgaben> aufgaben = aufgabenRepository.findByBerichtsheftId(berichtsheft.getId())
-				.stream().filter(a -> !a.isDeleted()).toList();
-		
-		return aufgaben.stream()
+		return aufgabenRepository.findByBerichtsheftIdAndIsDeletedFalse(berichtsheft.getId())
+				.stream()
 				.map(this::toResponse)
 				.toList();
 	}
@@ -76,23 +74,22 @@ public class AufgabenServiceImpl implements AufgabenService{
 	@Override
 	public AufgabenResponse updateAufgaben(AufgabenRequest request, Long aufgabenId) {
 		
-		Aufgaben neuaufgaben = aufgabenRepository.findById(aufgabenId)
+		Aufgaben updatedaufgaben = aufgabenRepository.findByIdAndIsDeletedFalse(aufgabenId)
 				.orElseThrow(()-> new ResourceNotFoundException("Aufgaben nicht gefunden."));
 		
-		neuaufgaben.setTag(request.getTag());
-		neuaufgaben.setAufgaben(request.getAufgaben().trim());
-		neuaufgaben.setStunden(request.getStunden());
-		neuaufgaben.setAbteilung(request.getAbteilung().trim());
+		updatedaufgaben.setTag(request.getTag());
+		updatedaufgaben.setAufgaben(request.getAufgaben().trim());
+		updatedaufgaben.setStunden(request.getStunden());
+		updatedaufgaben.setAbteilung(request.getAbteilung().trim());
 		
-		return toResponse(aufgabenRepository.save(neuaufgaben));
+		return toResponse(aufgabenRepository.save(updatedaufgaben));
 	}
 	
 	@Transactional
 	@Override
 	public void deleteAufgaben(Long aufgabenId) {
 		
-		Aufgaben aufgaben = aufgabenRepository.findById(aufgabenId)
-				.filter(a -> !a.isDeleted())
+		Aufgaben aufgaben = aufgabenRepository.findByIdAndIsDeletedFalse(aufgabenId)
 				.orElseThrow(()-> new ResourceNotFoundException("Aufgaben nicht gefunden."));
 		
 		aufgaben.setDeleted(true);

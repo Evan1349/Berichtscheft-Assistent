@@ -9,9 +9,9 @@ public interface BerichtsheftService {
 
 	public BerichtsheftResponse createBerichtsheft(Long benutzerId, BerichtsheftRequest request);
 
-	List<BerichtsheftResponse> getBerichtshefte();
+	public List<BerichtsheftResponse> getBerichtshefte(Long benutzerId);
 
-	BerichtsheftResponse updateBerichtsheft(Long berichtsheftId, BerichtsheftRequest request);
+	public BerichtsheftResponse updateBerichtsheft(Long berichtsheftId, BerichtsheftRequest request);
 
-	void deleteBerichtsheft(Long berichtsheftId);
+	public void deleteBerichtsheft(Long berichtsheftId);
 }

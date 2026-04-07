@@ -12,7 +12,7 @@ import com.example.demo.entities.Aufgaben;
 @Repository
 public interface AufgabenRepository extends JpaRepository<Aufgaben, Long> {
 	
-	Optional<Aufgaben> findById(Long id);
-	List<Aufgaben> findByBerichtsheftId(Long berichtsheftId);
+	Optional<Aufgaben> findByIdAndIsDeletedFalse(Long id);
+	List<Aufgaben> findByBerichtsheftIdAndIsDeletedFalse(Long berichtsheftId);
 
 }

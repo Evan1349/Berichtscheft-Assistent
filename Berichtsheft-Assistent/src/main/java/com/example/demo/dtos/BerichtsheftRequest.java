@@ -17,10 +17,10 @@ import lombok.NoArgsConstructor;
 public class BerichtsheftRequest {
 
 	@NotNull(message = "Der NachweisNummer darf nicht null sein.")
-	@Positive(message = "Die Nachweisnummer muss groesser als 0 sein.")
+	@Positive(message = "Die Nachweisnummer muss größer als 0 sein.")
 	private Integer nachweisNummer;
 
-	@NotNull(message = "Der Ausbildungsjahr darf nicht null sein.")
+	@NotNull(message = "Das Ausbildungsjahr darf nicht null sein.")
 	@Range(min = 1, max = 4)
 	private Integer ausbildungsjahr;
 	
