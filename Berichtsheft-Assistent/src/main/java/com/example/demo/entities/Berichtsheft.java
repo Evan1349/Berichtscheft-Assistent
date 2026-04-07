@@ -51,6 +51,12 @@ public class Berichtsheft extends Auditable {
 	@NotNull
 	private LocalDate wochenEnde;
 	
+	@NotNull
+	private Integer Jahr;
+	
+	@NotNull
+	private Integer Kw;
+	
 	@ManyToOne
     @JoinColumn(name = "azubi_id", nullable = false)
     private Benutzer azubi;

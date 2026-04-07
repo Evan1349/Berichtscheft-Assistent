@@ -15,8 +15,13 @@ public class DateUtils {
                 .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
     }
 
-    public static LocalDate getWochenEnde(LocalDate startDate) {
-        return startDate.plusDays(6); 
+    public static LocalDate getWochenEnde(Integer year, Integer weekNumber) {
+    	if (year == null || weekNumber == null) return null;
+    	LocalDate start = LocalDate.of(year, 1, 4)
+        .with(IsoFields.WEEK_OF_WEEK_BASED_YEAR, weekNumber)
+        .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+    	
+        return start.plusDays(6); 
     }
 
 }

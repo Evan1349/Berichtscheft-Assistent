@@ -6,12 +6,20 @@ import com.example.demo.dtos.BerichtsheftRequest;
 import com.example.demo.dtos.BerichtsheftResponse;
 
 public interface BerichtsheftService {
-
-	public BerichtsheftResponse createBerichtsheft(Long benutzerId, BerichtsheftRequest request);
+	
+	// CRUD
+	public BerichtsheftResponse createBerichtsheft(BerichtsheftRequest request);
 
 	public List<BerichtsheftResponse> getBerichtshefte(Long benutzerId);
 
 	public BerichtsheftResponse updateBerichtsheft(Long berichtsheftId, BerichtsheftRequest request);
 
 	public void deleteBerichtsheft(Long berichtsheftId);
+	
+	// Workflow
+	public void einreichen(Long berichtsheftId);
+
+	public void genehmigen(Long berichtsheftId);
+
+	public void aenderungErforderlich(Long berichtsheftId);
 }

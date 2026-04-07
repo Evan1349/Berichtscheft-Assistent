@@ -37,6 +37,12 @@ public class Benutzer extends Auditable {
 	private Long id;
 	
 	@Column(nullable= false)
+	private String email;
+	
+	@Column(nullable= false)
+	private String password;
+	
+	@Column(nullable= false)
 	private String vorname;
 	
 	@Column(nullable= false)
