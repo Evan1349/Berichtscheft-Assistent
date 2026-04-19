@@ -10,4 +10,12 @@ public enum BerichtsheftStatus {
     public boolean canBeSubmitted() {
         return this == ENTWURF || this == AENDERUNG_ERFORDERLICH;
     }
+    
+    public boolean canBeApproved() {
+    	return this == EINGEREICHT;
+    }
+    
+    public boolean canBeChange() {
+    	return this == EINGEREICHT;
+    }
 }

@@ -23,6 +23,21 @@ public class GlobalExceptionHandler {
 		
 	}
 	
+	@ExceptionHandler(IllegalStateException.class)
+	public ResponseEntity<?> handlellegalState(IllegalStateException ex){
+		return buildResponse(HttpStatus.BAD_REQUEST, "Bad_Request", ex.getMessage(), null);
+	}
+	
+	@ExceptionHandler(AccessDeniedException.class)
+	public ResponseEntity<?> handleAccessDenied(AccessDeniedException ex){
+		return buildResponse(HttpStatus.FORBIDDEN, "FORBIDDEN", ex.getMessage(), null);
+	}
+	
+	@ExceptionHandler(ConflictException.class)
+	public ResponseEntity<?> handleConflict(ConflictException ex){
+		return buildResponse(HttpStatus.CONFLICT, "CONFLICT", ex.getMessage(), null);
+	}
+	
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<?> handValidation(MethodArgumentNotValidException ex){
 		
@@ -33,6 +48,7 @@ public class GlobalExceptionHandler {
 	    
 		return buildResponse(HttpStatus.BAD_REQUEST, "Bad_Request", ex.getMessage(), errors);
 	}
+	
 	
 	private ResponseEntity<ErrorResponse> buildResponse(
             HttpStatus status, 

@@ -10,7 +10,7 @@ public interface BerichtsheftService {
 	// CRUD
 	public BerichtsheftResponse createBerichtsheft(BerichtsheftRequest request);
 
-	public List<BerichtsheftResponse> getBerichtshefte(Long benutzerId);
+	public List<BerichtsheftResponse> getBerichtshefte();
 
 	public BerichtsheftResponse updateBerichtsheft(Long berichtsheftId, BerichtsheftRequest request);
 

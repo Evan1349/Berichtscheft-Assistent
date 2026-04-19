@@ -9,6 +9,7 @@ import com.example.demo.dtos.BerichtsheftRequest;
 import com.example.demo.dtos.BerichtsheftResponse;
 import com.example.demo.entities.Benutzer;
 import com.example.demo.entities.Berichtsheft;
+import com.example.demo.enumeration.BenutzerRolle;
 import com.example.demo.enumeration.BerichtsheftStatus;
 import com.example.demo.exception.BadRequestException;
 import com.example.demo.exception.ConflictException;
@@ -48,8 +49,7 @@ public class BerichtsheftServiceImpl implements BerichtsheftService {
 		    throw new IllegalStateException("Benutzer hat keinen Ausbilder zugewiesen."); 
 		}
 		
-		boolean exists = berichtsheftRepository.existsByAzubiIdAndJahrAndKw(
-		        benutzer.getId(), request.getJahr(), request.getKw());
+		boolean exists = berichtsheftRepository.existsByAzubiIdAndJahrAndKw(benutzer.getId(), request.getJahr(), request.getKw());
 		if (exists) {
 		    throw new ConflictException("Ein Berichtsheft für diese Kalenderwoche existiert bereits.");
 		}
@@ -69,14 +69,26 @@ public class BerichtsheftServiceImpl implements BerichtsheftService {
 	
 	@Transactional(readOnly = true)
 	@Override
-	public List<BerichtsheftResponse> getBerichtshefte(Long benutzerId) {
+	public List<BerichtsheftResponse> getBerichtshefte() {
 		
-		Benutzer benutzer = benutzerRepository.findByIdAndIsDeletedFalse(benutzerId)
+		CustomUserDetails currentUser = currentUserService.getCurrentUser();
+		
+		Benutzer benutzer = benutzerRepository.findByIdAndIsDeletedFalse(currentUser.getId())
 				.orElseThrow(() -> new ResourceNotFoundException("Benutzer nicht gefunden."));
 		
-		return berichtsheftRepository.findAllByAzubiIdAndIsDeletedFalse(benutzer.getId()).stream()
-				.map(this::toResponse)
-				.toList();
+		if (benutzer.getRolle() == BenutzerRolle.AZUBI) {
+			return berichtsheftRepository.findAllByAzubiIdAndIsDeletedFalse(benutzer.getId()).stream()
+					.map(this::toResponse)
+					.toList();
+		}else if (benutzer.getRolle() == BenutzerRolle.AUSBILDER) {
+			return berichtsheftRepository.findAllByAusbilderIdAndIsDeletedFalse(benutzer.getId()).stream()
+					.map(this::toResponse)
+					.toList();
+		}else if (benutzer.getRolle() == BenutzerRolle.ADMIN) {
+			return berichtsheftRepository.findAllByIsDeletedFalse().stream().map(this::toResponse).toList();
+		}else {
+			throw new IllegalStateException("Benutzer hat keinen Rolle.");
+		}
 	}
 
 	
@@ -84,15 +96,23 @@ public class BerichtsheftServiceImpl implements BerichtsheftService {
 	@Override
 	public BerichtsheftResponse updateBerichtsheft(Long berichtsheftId, BerichtsheftRequest request) {
 		
-		Berichtsheft updatecberichtsheft = berichtsheftRepository.findByIdAndIsDeletedFalse(berichtsheftId)
+		Berichtsheft updateberichtsheft = berichtsheftRepository.findByIdAndIsDeletedFalse(berichtsheftId)
 				.orElseThrow(() -> new ResourceNotFoundException("Berichtsheft nicht gefunden."));
 		
-		updatecberichtsheft.setNachweisNummer(request.getNachweisNummer());
-		updatecberichtsheft.setAusbildungsjahr(request.getAusbildungsjahr());
-		updatecberichtsheft.setWochenStart(DateUtils.getWochenStart(request.getJahr(), request.getKw()));
-		updatecberichtsheft.setWochenEnde(DateUtils.getWochenEnde(request.getJahr(), request.getKw()));
+		CustomUserDetails currentUser = currentUserService.getCurrentUser();
 		
-		return toResponse(berichtsheftRepository.save(updatecberichtsheft));
+		permissionService.checkOwner(updateberichtsheft, currentUser);
+		
+        if (!updateberichtsheft.getStatus().canBeSubmitted()) {
+            throw new BadRequestException("Dieser Statuswechsel ist nicht erlaubt.");
+        }
+		
+		updateberichtsheft.setNachweisNummer(request.getNachweisNummer());
+		updateberichtsheft.setAusbildungsjahr(request.getAusbildungsjahr());
+		updateberichtsheft.setWochenStart(DateUtils.getWochenStart(request.getJahr(), request.getKw()));
+		updateberichtsheft.setWochenEnde(DateUtils.getWochenEnde(request.getJahr(), request.getKw()));
+		
+		return toResponse(berichtsheftRepository.save(updateberichtsheft));
 	}
 
 	
@@ -100,10 +120,19 @@ public class BerichtsheftServiceImpl implements BerichtsheftService {
 	@Override
 	public void deleteBerichtsheft(Long berichtsheftId) {
 		
-		Berichtsheft berichtsheft = berichtsheftRepository.findByIdAndIsDeletedFalse(berichtsheftId)
+		Berichtsheft deleteberichtsheft = berichtsheftRepository.findByIdAndIsDeletedFalse(berichtsheftId)
 				.orElseThrow(() -> new ResourceNotFoundException("Berichtsheft nicht gefunden."));
+		
+		CustomUserDetails currentUser = currentUserService.getCurrentUser();
+		
+		permissionService.checkOwner(deleteberichtsheft, currentUser);
+		
+        if (!deleteberichtsheft.getStatus().canBeSubmitted()) {
+            throw new BadRequestException("Dieser Statuswechsel ist nicht erlaubt.");
+        }
 	
-		berichtsheft.setDeleted(true);
+		deleteberichtsheft.setDeleted(true);
+		berichtsheftRepository.save(deleteberichtsheft);
 	}
 
 	@Transactional
@@ -123,17 +152,42 @@ public class BerichtsheftServiceImpl implements BerichtsheftService {
 
         berichtsheft.setStatus(BerichtsheftStatus.EINGEREICHT);
         berichtsheftRepository.save(berichtsheft);
-
 	}
 
 	@Override
 	public void genehmigen(Long berichtsheftId) {
-		// TODO Auto-generated method stub
+		
+		Berichtsheft berichtsheft = berichtsheftRepository.findByIdAndIsDeletedFalse(berichtsheftId)
+				.orElseThrow(() -> new ResourceNotFoundException("Berichtsheft nicht gefunden."));
+		
+		CustomUserDetails currentUser = currentUserService.getCurrentUser();
+		
+		permissionService.checkPruefer(berichtsheft, currentUser);
+		
+        if (!berichtsheft.getStatus().canBeApproved()) {
+            throw new BadRequestException("Dieser Statuswechsel ist nicht erlaubt.");
+        }
+		
+        berichtsheft.setStatus(BerichtsheftStatus.GENEHMIGT);
+        berichtsheftRepository.save(berichtsheft);
 	}
 
 	@Override
 	public void aenderungErforderlich(Long berichtsheftId) {
-		// TODO Auto-generated method stub
+		
+		Berichtsheft berichtsheft = berichtsheftRepository.findByIdAndIsDeletedFalse(berichtsheftId)
+				.orElseThrow(() -> new ResourceNotFoundException("Berichtsheft nicht gefunden."));
+		
+		CustomUserDetails currentUser = currentUserService.getCurrentUser();
+		
+		permissionService.checkPruefer(berichtsheft, currentUser);
+		
+        if (!berichtsheft.getStatus().canBeChange()) {
+            throw new BadRequestException("Dieser Statuswechsel ist nicht erlaubt.");
+        }
+        
+        berichtsheft.setStatus(BerichtsheftStatus.AENDERUNG_ERFORDERLICH);
+        berichtsheftRepository.save(berichtsheft);
 	}
 
 	

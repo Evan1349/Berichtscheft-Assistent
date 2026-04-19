@@ -45,7 +45,7 @@ public class CustomUserDetails implements UserDetails {
 	}
 
 	@Override
-	public String getUsername() {
+	public @Nullable String getUsername() {
 		return email;
 	}
 

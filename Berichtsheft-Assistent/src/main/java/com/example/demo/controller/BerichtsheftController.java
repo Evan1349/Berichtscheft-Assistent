@@ -32,7 +32,7 @@ public class BerichtsheftController {
 	
 	private final BerichtsheftService berichtsheftService;
 	
-	@Operation(summary = "Create Berichtsheft", description = "Creating a berichtsheft by benutzer id and object.")
+	@Operation(summary = "Create Berichtsheft", description = "Creating a berichtsheft by object.")
 	@PreAuthorize("hasRole('AZUBI')")
 	@PostMapping
 	public ResponseEntity<BerichtsheftResponse> create(@Valid @RequestBody BerichtsheftRequest request){
@@ -40,14 +40,15 @@ public class BerichtsheftController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
 	
-	@Operation(summary = "Get Berichtsheft", description = "Finding all berichtsheft by benutzer id.")
-	@GetMapping("/benutzer/{benutzerId}/berichtsheft")
-	public ResponseEntity<List<BerichtsheftResponse>> read(@PathVariable Long benutzerId){
-		List<BerichtsheftResponse> berichtsheft = berichtsheftService.getBerichtshefte(benutzerId);
+	@Operation(summary = "Get Berichtsheft", description = "Finding all berichtsheft by current user's role.")
+	@GetMapping
+	public ResponseEntity<List<BerichtsheftResponse>> read(){
+		List<BerichtsheftResponse> berichtsheft = berichtsheftService.getBerichtshefte();
 		return ResponseEntity.status(HttpStatus.OK).body(berichtsheft);
 	}
 
 	@Operation(summary = "update", description = "Updating a berichtsheft by its id and object.")
+	@PreAuthorize("hasRole('AZUBI')")
 	@PutMapping("/berichtsheft/{berichtsheftId}")
 	public ResponseEntity<BerichtsheftResponse> update(@PathVariable Long berichtsheftId, @Valid @RequestBody BerichtsheftRequest request){
 		BerichtsheftResponse result = berichtsheftService.updateBerichtsheft(berichtsheftId, request);
@@ -55,6 +56,7 @@ public class BerichtsheftController {
 	}
 	
 	@Operation(summary = "delete", description = "Deleting a berichtsheft by its id.")
+	@PreAuthorize("hasRole('AZUBI')")
 	@DeleteMapping("/berichtsheft/{berichtsheftId}")
 	public ResponseEntity<Void> delete(@PathVariable Long berichtsheftId){
 		berichtsheftService.deleteBerichtsheft(berichtsheftId);
@@ -70,4 +72,19 @@ public class BerichtsheftController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    @Operation(summary = "Approve Berichtsheft", description = "Reviewer approve a Berichtsheft.")
+    @PreAuthorize("hasRole('AUSBILDER')")
+    @PatchMapping("/berichtsheft/{berichtsheftId}/genehmigen")
+    public ResponseEntity<Void> approve(@PathVariable Long berichtsheftId) {
+    	berichtsheftService.genehmigen(berichtsheftId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+    
+    @Operation(summary = "Need to revise Berichtsheft", description = "Reviewer put back Berichtsheft to revise.")
+    @PreAuthorize("hasRole('AUSBILDER')")
+    @PatchMapping("/berichtsheft/{berichtsheftId}/zurueckweisen")
+    public ResponseEntity<Void> revise(@PathVariable Long berichtsheftId) {
+    	berichtsheftService.aenderungErforderlich(berichtsheftId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 }

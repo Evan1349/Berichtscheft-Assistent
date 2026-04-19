@@ -15,10 +15,17 @@ public class BerichtsheftPermissionService {
         }
     }
     
+    public void checkPruefer(Berichtsheft berichtsheft, CustomUserDetails currentUser) {
+        if (!berichtsheft.getPruefer().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("Keine Berechtigung für diese Aktion.");
+        }
+    }
+    
     public void checkCreator(CustomUserDetails currentUser) {
         if (currentUser.getRole()!= BenutzerRolle.AZUBI) {
             throw new AccessDeniedException("Keine Berechtigung für diese Aktion.");
         }
     }
+    
 
 }
