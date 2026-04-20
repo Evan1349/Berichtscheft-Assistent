@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 public class CurrentUserService {
 	
     public CustomUserDetails getCurrentUser() {
+    	
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null

@@ -9,9 +9,13 @@ import com.example.demo.dtos.AufgabenRequest;
 import com.example.demo.dtos.AufgabenResponse;
 import com.example.demo.entities.Aufgaben;
 import com.example.demo.entities.Berichtsheft;
+import com.example.demo.exception.BadRequestException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.AufgabenRepository;
 import com.example.demo.repository.BerichtsheftRepository;
+import com.example.demo.security.CurrentUserService;
+import com.example.demo.security.CustomUserDetails;
+import com.example.demo.security.PermissionService;
 import com.example.demo.service.AufgabenService;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +34,8 @@ public class AufgabenServiceImpl implements AufgabenService{
 
 	private final AufgabenRepository aufgabenRepository;
 	private final BerichtsheftRepository berichtsheftRepository;
+	private final CurrentUserService currentUserService;
+	private final PermissionService permissionService;
 
 	/**
 	 * Erstellt einen neuen Aufgaben-Eintrag aus der validierten Anfrage.
@@ -43,8 +49,20 @@ public class AufgabenServiceImpl implements AufgabenService{
 	@Override
 	public AufgabenResponse createAufgaben(AufgabenRequest request, Long berichtsheftId) {
 		
+		CustomUserDetails currentUser = currentUserService.getCurrentUser();
+		
 		Berichtsheft berichtsheft = berichtsheftRepository.findByIdAndIsDeletedFalse(berichtsheftId)
 				.orElseThrow(()-> new ResourceNotFoundException("Berichtsheft nicht gefunden."));
+		
+        if (!berichtsheft.getStatus().canBeSubmitted()) {
+            throw new BadRequestException("Dieser Statuswechsel ist nicht erlaubt.");
+        }
+		
+		if (berichtsheft == null || berichtsheft.isDeleted()) {
+	        throw new ResourceNotFoundException("Berichtsheft nicht gefunden.");
+	    }	
+		
+		permissionService.checkOwner(berichtsheft, currentUser);
 		
 		Aufgaben aufgaben = Aufgaben.builder()
 				.berichtsheft(berichtsheft)
@@ -74,8 +92,22 @@ public class AufgabenServiceImpl implements AufgabenService{
 	@Override
 	public AufgabenResponse updateAufgaben(AufgabenRequest request, Long aufgabenId) {
 		
+		CustomUserDetails currentUser = currentUserService.getCurrentUser();
+		
 		Aufgaben updatedaufgaben = aufgabenRepository.findByIdAndIsDeletedFalse(aufgabenId)
 				.orElseThrow(()-> new ResourceNotFoundException("Aufgaben nicht gefunden."));
+		
+		Berichtsheft berichtsheft = updatedaufgaben.getBerichtsheft();
+		
+        if (!berichtsheft.getStatus().canBeSubmitted()) {
+            throw new BadRequestException("Dieser Statuswechsel ist nicht erlaubt.");
+        }
+		
+		if (berichtsheft == null || berichtsheft.isDeleted()) {
+	        throw new ResourceNotFoundException("Berichtsheft nicht gefunden.");
+	    }		
+		
+		permissionService.checkOwner(berichtsheft, currentUser);
 		
 		updatedaufgaben.setTag(request.getTag());
 		updatedaufgaben.setAufgaben(request.getAufgaben().trim());
@@ -89,10 +121,24 @@ public class AufgabenServiceImpl implements AufgabenService{
 	@Override
 	public void deleteAufgaben(Long aufgabenId) {
 		
-		Aufgaben aufgaben = aufgabenRepository.findByIdAndIsDeletedFalse(aufgabenId)
+		CustomUserDetails currentUser = currentUserService.getCurrentUser();
+		
+		Aufgaben deletedaufgaben = aufgabenRepository.findByIdAndIsDeletedFalse(aufgabenId)
 				.orElseThrow(()-> new ResourceNotFoundException("Aufgaben nicht gefunden."));
 		
-		aufgaben.setDeleted(true);
+		Berichtsheft berichtsheft = deletedaufgaben.getBerichtsheft();
+		
+        if (!berichtsheft.getStatus().canBeSubmitted()) {
+            throw new BadRequestException("Dieser Statuswechsel ist nicht erlaubt.");
+        }
+        
+		if (berichtsheft == null || berichtsheft.isDeleted()) {
+	        throw new ResourceNotFoundException("Berichtsheft nicht gefunden.");
+	    }	
+		
+		permissionService.checkOwner(berichtsheft, currentUser);
+		
+		deletedaufgaben.setDeleted(true);
 
 	}
 		

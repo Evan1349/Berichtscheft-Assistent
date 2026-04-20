@@ -16,7 +16,7 @@ import com.example.demo.exception.ConflictException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.BenutzerRepository;
 import com.example.demo.repository.BerichtsheftRepository;
-import com.example.demo.security.BerichtsheftPermissionService;
+import com.example.demo.security.PermissionService;
 import com.example.demo.security.CurrentUserService;
 import com.example.demo.security.CustomUserDetails;
 import com.example.demo.service.BerichtsheftService;
@@ -31,7 +31,7 @@ public class BerichtsheftServiceImpl implements BerichtsheftService {
 	private final BerichtsheftRepository berichtsheftRepository;
 	private final BenutzerRepository benutzerRepository;
 	private final CurrentUserService currentUserService;
-	private final BerichtsheftPermissionService permissionService;
+	private final PermissionService permissionService;
 
 	
 	@Transactional
@@ -39,8 +39,6 @@ public class BerichtsheftServiceImpl implements BerichtsheftService {
 	public BerichtsheftResponse createBerichtsheft(BerichtsheftRequest request) {
 		
 		CustomUserDetails currentUser = currentUserService.getCurrentUser();
-		
-		permissionService.checkCreator(currentUser);
 
 		Benutzer benutzer = benutzerRepository.findByIdAndIsDeletedFalse(currentUser.getId())
 		        .orElseThrow(() -> new ResourceNotFoundException("Benutzer nicht gefunden."));

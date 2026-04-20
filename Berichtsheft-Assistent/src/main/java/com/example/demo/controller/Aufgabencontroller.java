@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,6 +32,7 @@ public class AufgabenController {
 	private final AufgabenService aufgabenService;
 	
 	@Operation(summary = "Create Aufgaben", description = "Creating a aufgaben by berichtsheft id and object.")
+	@PreAuthorize("hasRole('AZUBI')")
 	@PostMapping("/berichtsheft/{berichtsheftId}/aufgaben")
 	public ResponseEntity<AufgabenResponse> create(@PathVariable Long berichtsheftId, @Valid @RequestBody AufgabenRequest request){
 		AufgabenResponse response = aufgabenService.createAufgaben(request, berichtsheftId);
@@ -45,6 +47,7 @@ public class AufgabenController {
 	}
 
 	@Operation(summary = "update", description = "Updating a aufgaben by aufgaben id and object.")
+	@PreAuthorize("hasRole('AZUBI')")
 	@PutMapping("/aufgaben/{aufgabenId}")
 	public ResponseEntity<AufgabenResponse> update(@PathVariable Long aufgabenId, @Valid @RequestBody AufgabenRequest request){
 		AufgabenResponse result = aufgabenService.updateAufgaben(request, aufgabenId);
@@ -52,6 +55,7 @@ public class AufgabenController {
 	}
 	
 	@Operation(summary = "delete", description = "Deleting a aufgaben by aufgaben id.")
+	@PreAuthorize("hasRole('AZUBI')")
 	@DeleteMapping("/aufgaben/{aufgabenId}")
 	public ResponseEntity<Void> delete(@PathVariable Long aufgabenId){
 		aufgabenService.deleteAufgaben(aufgabenId);
