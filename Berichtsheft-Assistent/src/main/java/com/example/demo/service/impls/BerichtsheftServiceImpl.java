@@ -55,6 +55,8 @@ public class BerichtsheftServiceImpl implements BerichtsheftService {
 		Berichtsheft berichtsheft = Berichtsheft.builder()
 				.nachweisNummer(request.getNachweisNummer())
 				.ausbildungsjahr(request.getAusbildungsjahr())
+				.Jahr(request.getJahr())
+				.Kw(request.getKw())
 				.wochenStart(DateUtils.getWochenStart(request.getJahr(), request.getKw()))
 				.wochenEnde(DateUtils.getWochenEnde(request.getJahr(), request.getKw()))
 				.azubi(benutzer)
@@ -104,9 +106,22 @@ public class BerichtsheftServiceImpl implements BerichtsheftService {
         if (!updateberichtsheft.getStatus().canBeSubmitted()) {
             throw new BadRequestException("Dieser Statuswechsel ist nicht erlaubt.");
         }
-		
+        
+ 
+    	boolean exists = berichtsheftRepository.existsByAzubiIdAndJahrAndKwAndIdNot(
+    				currentUser.getId(), 
+    				request.getJahr(), 
+    				request.getKw(), 
+    				berichtsheftId);
+    	if (exists) {
+    		 throw new ConflictException("Ein Berichtsheft für diese Kalenderwoche existiert bereits.");
+    	}
+        
+
 		updateberichtsheft.setNachweisNummer(request.getNachweisNummer());
 		updateberichtsheft.setAusbildungsjahr(request.getAusbildungsjahr());
+		updateberichtsheft.setJahr(request.getJahr());
+		updateberichtsheft.setKw(request.getKw());
 		updateberichtsheft.setWochenStart(DateUtils.getWochenStart(request.getJahr(), request.getKw()));
 		updateberichtsheft.setWochenEnde(DateUtils.getWochenEnde(request.getJahr(), request.getKw()));
 		

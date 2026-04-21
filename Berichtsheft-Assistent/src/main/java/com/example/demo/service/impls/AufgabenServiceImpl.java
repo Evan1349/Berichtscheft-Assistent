@@ -79,8 +79,12 @@ public class AufgabenServiceImpl implements AufgabenService{
 	@Override
 	public List<AufgabenResponse> getTageAufgaben(Long berichtsheftId) {
 		
+		CustomUserDetails currentUser = currentUserService.getCurrentUser();
+		
 		Berichtsheft berichtsheft = berichtsheftRepository.findByIdAndIsDeletedFalse(berichtsheftId)
 				.orElseThrow(()-> new ResourceNotFoundException("Berichtsheft nicht gefunden."));
+		
+		permissionService.checkReader(berichtsheft, currentUser);
 		
 		return aufgabenRepository.findByBerichtsheftIdAndIsDeletedFalse(berichtsheft.getId())
 				.stream()

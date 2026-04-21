@@ -3,6 +3,7 @@ package com.example.demo.security;
 import org.springframework.stereotype.Component;
 
 import com.example.demo.entities.Berichtsheft;
+import com.example.demo.enumeration.BenutzerRolle;
 import com.example.demo.exception.AccessDeniedException;
 
 @Component
@@ -20,4 +21,14 @@ public class PermissionService {
         }
     }
     
+    public void checkReader(Berichtsheft berichtsheft, CustomUserDetails currentUser) {
+    	
+    	if (currentUser.getRole() == BenutzerRolle.ADMIN) return;
+    	
+    	if (!berichtsheft.getAzubi().getAusbilder().getId().equals(currentUser.getId())
+    		&&!berichtsheft.getAzubi().getId().equals(currentUser.getId())) {
+    		throw new AccessDeniedException("Keine Berechtigung für diese Aktion.");
+    	}
+    	
+    }
 }

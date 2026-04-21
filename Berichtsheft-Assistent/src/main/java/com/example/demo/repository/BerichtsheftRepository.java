@@ -15,12 +15,30 @@ public interface BerichtsheftRepository extends JpaRepository<Berichtsheft, Long
 
 	Optional<Berichtsheft> findByIdAndIsDeletedFalse(Long id);
 	
-	boolean existsByAzubiIdAndJahrAndKw(Long id, int jahr, int kw);
+	boolean existsByAzubiIdAndJahrAndKw(
+			Long azubiId, 
+			int jahr, 
+			int kw
+			);
+	
+	
+	boolean existsByAzubiIdAndJahrAndKwAndIdNot(
+			Long azubiId, 
+			int jahr, 
+			int kw,
+			Long berichtsheftId
+			);
 
 	List<Berichtsheft> findAllByAzubiIdAndIsDeletedFalse(Long id);
 	
-	@Query("SELECT b FROM Berichtsheft b JOIN b.azubi a WHERE a.ausbilder.id = :ausbilderId AND b.deleted = false")
-	List<Berichtsheft> findAllByAusbilderIdAndIsDeletedFalse(@Param("ausbilderId")Long id);
+	@Query("""
+			SELECT b FROM Berichtsheft b
+			 JOIN b.azubi a 
+			 WHERE a.ausbilder.id = :ausbilderId 
+			 AND b.deleted = false
+			""")
+	List<Berichtsheft> findAllByAusbilderIdAndIsDeletedFalse(
+			@Param("ausbilderId")Long id);
 
 	List<Berichtsheft> findAllByIsDeletedFalse();
 }
