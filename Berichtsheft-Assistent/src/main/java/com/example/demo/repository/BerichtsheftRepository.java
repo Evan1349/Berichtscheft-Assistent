@@ -15,14 +15,14 @@ public interface BerichtsheftRepository extends JpaRepository<Berichtsheft, Long
 
 	Optional<Berichtsheft> findByIdAndIsDeletedFalse(Long id);
 	
-	boolean existsByAzubiIdAndJahrAndKw(
+	boolean existsByAzubiIdAndJahrAndKwAndIsDeletedFalse(
 			Long azubiId, 
 			int jahr, 
 			int kw
 			);
 	
 	
-	boolean existsByAzubiIdAndJahrAndKwAndIdNot(
+	boolean existsByAzubiIdAndJahrAndKwAndIdNotAndIsDeletedFalse(
 			Long azubiId, 
 			int jahr, 
 			int kw,

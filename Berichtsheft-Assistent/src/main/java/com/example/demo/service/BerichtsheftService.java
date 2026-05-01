@@ -17,9 +17,10 @@ public interface BerichtsheftService {
 	public void deleteBerichtsheft(Long berichtsheftId);
 	
 	// Workflow
-	public void einreichen(Long berichtsheftId);
-
-	public void genehmigen(Long berichtsheftId);
-
-	public void aenderungErforderlich(Long berichtsheftId);
+	
+	public void einreichen(Long berichtsheftId, String comment);
+	
+	public void genehmigen(Long berichtsheftId, String comment);
+	
+	public void aenderungErforderlich(Long berichtsheftId, String comment);
 }
